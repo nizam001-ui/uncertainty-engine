@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uncertainty Engine Pro</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Clash+Display:wght@400;500;600;700&family=Instrument+Sans:ital,wght@0,400;0,500;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap');
+
+:root {
+  --bg: #06080b;
+  --bg2: #0b0f15;
+  --surface: #0f1520;
+  --surface2: #141c28;
+  --border: #1e2d3d;
+  --border2: #263548;
+  --text: #b8ccd8;
+  --text2: #7a9ab0;
+  --muted: #3d5468;
+  --white: #e8f2fa;
+  --accent: #0af0c0;
+  --accent2: #0077ff;
+
+  --mem: #00e87a;
+  --mem-bg: rgba(0,232,122,0.07);
+  --mem-b: rgba(0,232,122,0.25);
+  --inf: #ffe566;
+  --inf-bg: rgba(255,229,102,0.07);
+  --inf-b: rgba(255,229,102,0.25);
+  --ext: #ff9040;
+  --ext-bg: rgba(255,144,64,0.07);
+  --ext-b: rgba(255,144,64,0.25);
+  --unk: #ff4d6d;
+  --unk-bg: rgba(255,77,109,0.07);
+  --unk-b: rgba(255,77,109,0.25);
+
+  --sidebar: 260px;
+  --header: 58px;
+  --tabs: 52px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; overflow:hidden; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── HEADER ── */
+.header {
+  height: var(--header);
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 16px;
+  flex-shrink: 0;
+  z-index: 100;
+}
+
+.brand {
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0;
+}
+.brand-icon {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.brand-name {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--white);
+  letter-spacing: -0.3px;
+}
+.brand-name span { color: var(--accent); }
+.brand-tag {
+  font-size: 9px; color: var(--muted);
+  letter-spacing: 2px; text-transform: uppercase;
+  margin-top: 1px;
+}
+
+.header-sep { width: 1px; height: 28px; background: var(--border); flex-shrink: 0; }
+
+/* Mode tabs in header */
+.mode-tabs {
+  display: flex; gap: 4px;
+}
+.mode-tab {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-family: 'Syne', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  color: var(--muted);
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.mode-tab:hover { color: var(--text); border-color: var(--border); }
+.mode-tab.active { background: var(--surface2); color: var(--accent); border-color: var(--border2); }
+
+.header-actions {
+  margin-left: auto;
+  display: flex; gap: 8px;
+}
+.hbtn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-family: 'Syne', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text2);
+  display: flex; align-items: center; gap: 6px;
+}
+.hbtn:hover { background: var(--surface); color: var(--white); }
+.hbtn.primary { background: var(--accent); color: #000; border-color: var(--accent); }
+.hbtn.primary:hover { background: #20ffd0; }
+
+/* ── LAYOUT ── */
+.app-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: var(--sidebar);
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.sidebar-section {
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-title {
+  padding: 12px 16px 8px;
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-family: 'Syne', sans-serif;
+}
+
+/* Legend */
+.legend-items {
+  padding: 0 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.legend-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.legend-row:hover { background: var(--surface); }
+.legend-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.ld-m { background: var(--mem); box-shadow: 0 0 6px var(--mem); }
+.ld-i { background: var(--inf); box-shadow: 0 0 6px var(--inf); }
+.ld-e { background: var(--ext); box-shadow: 0 0 6px var(--ext); }
+.ld-u { background: var(--unk); box-shadow: 0 0 6px var(--unk); }
+.legend-label { font-size: 11px; color: var(--text2); flex: 1; }
+.legend-pct { font-size: 10px; color: var(--muted); font-family: 'Syne', sans-serif; font-weight: 700; }
+
+/* Sessions */
+.sessions-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 8px;
+}
+.sessions-list::-webkit-scrollbar { width: 4px; }
+.sessions-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.session-item {
+  padding: 10px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  margin-bottom: 4px;
+  transition: all 0.15s;
+}
+.session-item:hover { background: var(--surface); border-color: var(--border); }
+.session-item.active { background: var(--surface2); border-color: var(--border2); }
+.session-q {
+  font-size: 11px; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
+.session-meta {
+  display: flex; gap: 8px; align-items: center;
+}
+.session-time { font-size: 9px; color: var(--muted); }
+.session-bar {
+  flex: 1; height: 3px; border-radius: 2px;
+  background: var(--border);
+  overflow: hidden; display: flex;
+}
+.session-bar-seg { height: 100%; }
+
+.no-sessions {
+  padding: 24px 16px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.8;
+}
+
+/* ── MAIN ── */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* Mode panels */
+.mode-panel { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+.mode-panel.active { display: flex; }
+
+/* ── SINGLE MODE ── */
+.single-output {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.single-output::-webkit-scrollbar { width: 6px; }
+.single-output::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+.input-dock {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--bg2);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.suggestions-row {
+  display: flex; gap: 6px; flex-wrap: wrap;
+}
+.sug-btn {
+  padding: 5px 11px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.sug-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(10,240,192,0.05); }
+
+.input-row {
+  display: flex; gap: 10px; align-items: flex-end;
+}
+.main-input {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--white);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  padding: 12px 16px;
+  resize: none;
+  outline: none;
+  min-height: 48px;
+  max-height: 140px;
+  line-height: 1.6;
+  transition: border-color 0.2s;
+}
+.main-input::placeholder { color: var(--muted); }
+.main-input:focus { border-color: var(--accent); }
+
+.analyze-btn {
+  height: 48px;
+  padding: 0 20px;
+  background: linear-gradient(135deg, var(--accent), #00c4fa);
+  border: none;
+  border-radius: 10px;
+  color: #000;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.analyze-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(10,240,192,0.3); }
+.analyze-btn:disabled { background: var(--border); color: var(--muted); transform: none; box-shadow: none; cursor: not-allowed; }
+
+/* ── RESPONSE CARD ── */
+.response-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  animation: fadeUp 0.4s ease;
+}
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(14px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+.card-header {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+}
+.card-mode-badge {
+  font-size: 9px; font-family: 'Syne', sans-serif; font-weight: 700;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 4px;
+}
+.badge-research { background: rgba(0,119,255,0.15); color: #5599ff; border: 1px solid rgba(0,119,255,0.3); }
+.badge-student { background: rgba(10,240,192,0.1); color: var(--accent); border: 1px solid rgba(10,240,192,0.2); }
+.badge-medical { background: rgba(255,77,109,0.12); color: var(--unk); border: 1px solid rgba(255,77,109,0.25); }
+.badge-debate { background: rgba(255,144,64,0.12); color: var(--ext); border: 1px solid rgba(255,144,64,0.25); }
+.badge-general { background: rgba(255,229,102,0.1); color: var(--inf); border: 1px solid rgba(255,229,102,0.25); }
+
+.card-question {
+  flex: 1; font-size: 12px; color: var(--text2);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.stakes-pill {
+  padding: 3px 10px; border-radius: 20px; font-size: 10px;
+  font-family: 'Syne', sans-serif; font-weight: 700;
+  letter-spacing: 0.5px; flex-shrink: 0;
+}
+.stakes-high { background: rgba(255,77,109,0.12); color: var(--unk); border: 1px solid rgba(255,77,109,0.3); }
+.stakes-medium { background: rgba(255,144,64,0.12); color: var(--ext); border: 1px solid rgba(255,144,64,0.3); }
+.stakes-low { background: rgba(0,232,122,0.1); color: var(--mem); border: 1px solid rgba(0,232,122,0.25); }
+
+.card-actions {
+  display: flex; gap: 6px;
+}
+.card-btn {
+  padding: 4px 10px; border-radius: 5px;
+  font-size: 10px; font-family: 'Syne', sans-serif; font-weight: 600;
+  border: 1px solid var(--border); background: transparent; color: var(--muted);
+  cursor: pointer; transition: all 0.15s;
+}
+.card-btn:hover { background: var(--surface2); color: var(--text); }
+.card-btn.export { color: var(--accent); border-color: rgba(10,240,192,0.3); }
+.card-btn.export:hover { background: rgba(10,240,192,0.08); }
+
+.card-body {
+  padding: 20px 24px;
+  line-height: 1.9;
+  font-size: 13px;
+  color: var(--text);
+}
+.card-body p { margin-bottom: 14px; }
+.card-body p:last-child { margin-bottom: 0; }
+
+/* Confidence spans */
+.cs {
+  border-radius: 3px; padding: 1px 2px;
+  cursor: help; position: relative;
+  transition: filter 0.15s; display: inline;
+}
+.cs-m { background: var(--mem-bg); border-bottom: 2px solid var(--mem); color: #d0fff0; }
+.cs-i { background: var(--inf-bg); border-bottom: 2px solid var(--inf); color: #fffce0; }
+.cs-e { background: var(--ext-bg); border-bottom: 2px solid var(--ext); color: #fff4e8; }
+.cs-u { background: var(--unk-bg); border-bottom: 2px solid var(--unk); color: #ffe8ed; }
+.cs:hover { filter: brightness(1.4); }
+
+.cs .tt {
+  display: none; position: absolute;
+  bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+  background: #1a2535; border: 1px solid var(--border2);
+  border-radius: 8px; padding: 8px 12px;
+  font-size: 11px; white-space: nowrap; z-index: 200;
+  pointer-events: none; min-width: 150px; text-align: center;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+.cs:hover .tt { display: block; }
+.tt-type { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 12px; margin-bottom: 3px; }
+.tt-m .tt-type { color: var(--mem); }
+.tt-i .tt-type { color: var(--inf); }
+.tt-e .tt-type { color: var(--ext); }
+.tt-u .tt-type { color: var(--unk); }
+.tt-desc { color: var(--text2); font-size: 10px; }
+
+/* Confidence bar */
+.card-footer {
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 16px;
+}
+.conf-bar-wrap { flex: 1; }
+.conf-bar-lbl { font-size: 9px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 5px; }
+.conf-bar {
+  height: 5px; border-radius: 3px; background: var(--border);
+  overflow: hidden; display: flex; gap: 2px;
+}
+.cbs { height: 100%; border-radius: 3px; transition: width 1s cubic-bezier(.16,1,.3,1); }
+.conf-stats { display: flex; gap: 16px; flex-shrink: 0; }
+.cstat { text-align: center; }
+.cstat-v { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; }
+.cstat-l { font-size: 8px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-top: 1px; }
+
+/* ── COMPARE MODE ── */
+.compare-panel {
+  flex: 1; display: flex; flex-direction: column; overflow: hidden;
+}
+.compare-inputs {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+  display: flex; gap: 12px;
+}
+.compare-input-wrap { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.compare-label {
+  font-size: 10px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase;
+  font-family: 'Syne', sans-serif;
+}
+.compare-textarea {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--white);
+  font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  padding: 10px 14px; resize: none; outline: none; height: 72px;
+  transition: border-color 0.2s;
+}
+.compare-textarea:focus { border-color: var(--accent); }
+.compare-textarea::placeholder { color: var(--muted); }
+.compare-run-btn {
+  align-self: flex-end; height: 72px; padding: 0 18px;
+  background: linear-gradient(135deg, var(--accent), #00c4fa);
+  border: none; border-radius: 10px; color: #000;
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 12px;
+  letter-spacing: 1px; cursor: pointer; transition: all 0.2s; white-space: nowrap;
+}
+.compare-run-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(10,240,192,0.3); }
+.compare-run-btn:disabled { background: var(--border); color: var(--muted); transform: none; box-shadow: none; }
+
+.compare-outputs {
+  flex: 1; display: flex; overflow: hidden;
+}
+.compare-col {
+  flex: 1; overflow-y: auto; padding: 20px;
+  border-right: 1px solid var(--border);
+}
+.compare-col:last-child { border-right: none; }
+.compare-col::-webkit-scrollbar { width: 4px; }
+.compare-col::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.compare-col-header {
+  font-size: 10px; font-family: 'Syne', sans-serif; font-weight: 700;
+  color: var(--muted); letter-spacing: 2px; text-transform: uppercase;
+  margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+}
+.col-a-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+.col-b-dot { width: 8px; height: 8px; border-radius: 50%; background: #aa66ff; flex-shrink: 0; }
+
+.compare-winner {
+  margin-top: 16px; padding: 14px 16px;
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 10px;
+}
+.compare-winner-title {
+  font-size: 10px; font-family: 'Syne', sans-serif; font-weight: 700;
+  color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.compare-winner-body { font-size: 12px; color: var(--text); line-height: 1.7; }
+
+/* ── RESEARCH MODE ── */
+.research-panel {
+  flex: 1; display: flex; flex-direction: column; overflow: hidden;
+}
+.research-input-area {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.research-textarea {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--white);
+  font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  padding: 12px 16px; resize: none; outline: none; height: 80px;
+  transition: border-color 0.2s;
+}
+.research-textarea:focus { border-color: var(--accent); }
+.research-textarea::placeholder { color: var(--muted); }
+.research-row { display: flex; gap: 10px; align-items: center; }
+.research-run-btn {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, var(--accent), #00c4fa);
+  border: none; border-radius: 8px; color: #000;
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 12px;
+  letter-spacing: 1px; cursor: pointer; transition: all 0.2s;
+}
+.research-run-btn:hover { transform: translateY(-1px); }
+.research-run-btn:disabled { background: var(--border); color: var(--muted); transform: none; }
+
+.research-output {
+  flex: 1; overflow-y: auto; padding: 20px 24px;
+  display: flex; flex-direction: column; gap: 16px;
+}
+.research-output::-webkit-scrollbar { width: 6px; }
+.research-output::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+.research-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden; animation: fadeUp 0.4s ease;
+}
+.research-card-header {
+  padding: 10px 16px; border-bottom: 1px solid var(--border);
+  font-size: 11px; font-family: 'Syne', sans-serif; font-weight: 700;
+  color: var(--text2); display: flex; align-items: center; gap: 8px;
+}
+.research-card-body {
+  padding: 16px 18px; font-size: 12px; line-height: 1.85; color: var(--text);
+}
+
+/* ── LOADING ── */
+.loading-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 28px;
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  animation: fadeUp 0.3s ease;
+}
+.spinner {
+  width: 28px; height: 28px;
+  border: 2px solid var(--border2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-label {
+  font-size: 11px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase;
+  font-family: 'Syne', sans-serif;
+}
+.loading-steps { display: flex; flex-direction: column; gap: 5px; width: 100%; max-width: 280px; }
+.lstep {
+  font-size: 11px; color: var(--muted);
+  display: flex; align-items: center; gap: 8px;
+  transition: color 0.3s;
+}
+.lstep.active { color: var(--accent); }
+.lstep.done { color: var(--mem); }
+.lstep-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 12px;
+  color: var(--muted);
+  padding: 40px;
+}
+.empty-icon { font-size: 48px; filter: grayscale(0.3); }
+.empty-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; color: var(--text2); }
+.empty-desc { font-size: 12px; text-align: center; line-height: 1.8; max-width: 340px; }
+
+/* ── EXPORT MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  z-index: 1000; display: none; align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: 16px; padding: 28px; width: 480px; max-width: 90vw;
+  animation: fadeUp 0.3s ease;
+}
+.modal-title {
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px;
+  color: var(--white); margin-bottom: 6px;
+}
+.modal-sub { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+.modal-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.export-opt {
+  padding: 14px 16px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--surface);
+  cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; gap: 14px;
+}
+.export-opt:hover { border-color: var(--accent); background: rgba(10,240,192,0.05); }
+.export-opt-icon { font-size: 24px; }
+.export-opt-info {}
+.export-opt-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; color: var(--white); }
+.export-opt-desc { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.modal-close {
+  width: 100%; padding: 10px; border-radius: 8px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--muted); font-family: 'Syne', sans-serif; font-weight: 600; font-size: 12px;
+  cursor: pointer; transition: all 0.2s;
+}
+.modal-close:hover { background: var(--surface); color: var(--text); }
+
+/* scrollbar global */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="brand">
+    <div class="brand-icon">🧠</div>
+    <div>
+      <div class="brand-name">Uncertainty <span>Engine</span> <span style="font-size:11px;color:var(--muted);font-weight:500">Pro</span></div>
+    </div>
+  </div>
+  <div class="header-sep"></div>
+  <div class="mode-tabs">
+    <div class="mode-tab active" onclick="switchMode('single')">⚡ Analyze</div>
+    <div class="mode-tab" onclick="switchMode('compare')">⇄ Compare</div>
+    <div class="mode-tab" onclick="switchMode('research')">🔬 Research</div>
+    <div class="mode-tab" onclick="switchMode('medical')">💊 Medical</div>
+    <div class="mode-tab" onclick="switchMode('debate')">⚖ Debate</div>
+  </div>
+  <div class="header-actions">
+    <button class="hbtn" onclick="openExportModal()">↑ Export All</button>
+    <button class="hbtn" onclick="clearAll()">✕ Clear</button>
+  </div>
+</div>
+
+<!-- BODY -->
+<div class="app-body">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">Confidence Key</div>
+      <div class="legend-items">
+        <div class="legend-row"><div class="legend-dot ld-m"></div><div class="legend-label">Memorized</div><div class="legend-pct" id="lg-m">—</div></div>
+        <div class="legend-row"><div class="legend-dot ld-i"></div><div class="legend-label">Inferred</div><div class="legend-pct" id="lg-i">—</div></div>
+        <div class="legend-row"><div class="legend-dot ld-e"></div><div class="legend-label">Extrapolated</div><div class="legend-pct" id="lg-e">—</div></div>
+        <div class="legend-row"><div class="legend-dot ld-u"></div><div class="legend-label">Unknown</div><div class="legend-pct" id="lg-u">—</div></div>
+      </div>
+    </div>
+    <div class="sidebar-section" style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+      <div class="sidebar-title">Session History</div>
+      <div class="sessions-list" id="sessionsList">
+        <div class="no-sessions">No sessions yet.<br>Ask a question to begin.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN PANELS -->
+  <div class="main">
+
+    <!-- ── SINGLE / ANALYZE ── -->
+    <div class="mode-panel active" id="panel-single">
+      <div class="single-output" id="singleOutput">
+        <div class="empty-state">
+          <div class="empty-icon">🔍</div>
+          <div class="empty-title">Analyze Mode</div>
+          <div class="empty-desc">Ask any question. Every claim in the AI's response will be color-coded by confidence level. Hover to understand why.</div>
+        </div>
+      </div>
+      <div class="input-dock">
+        <div class="suggestions-row">
+          <button class="sug-btn" onclick="fillSingle('How does mRNA vaccine technology work?')">💉 mRNA vaccines</button>
+          <button class="sug-btn" onclick="fillSingle('What will AI be capable of in 2030?')">🤖 AI in 2030</button>
+          <button class="sug-btn" onclick="fillSingle('Is coffee good or bad for health?')">☕ Coffee & health</button>
+          <button class="sug-btn" onclick="fillSingle('How do black holes work?')">🌑 Black holes</button>
+          <button class="sug-btn" onclick="fillSingle('What causes inflation?')">📈 Inflation</button>
+          <button class="sug-btn" onclick="fillSingle('How does quantum computing work?')">⚛ Quantum computing</button>
+        </div>
+        <div class="input-row">
+          <textarea class="main-input" id="singleInput" placeholder="Ask anything — see exactly what AI knows vs. guesses…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();runSingle();}"></textarea>
+          <button class="analyze-btn" id="singleBtn" onclick="runSingle()">ANALYZE →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── COMPARE MODE ── -->
+    <div class="mode-panel" id="panel-compare">
+      <div class="compare-panel">
+        <div class="compare-inputs">
+          <div class="compare-input-wrap">
+            <div class="compare-label">🟢 Question A</div>
+            <textarea class="compare-textarea" id="compareA" placeholder="e.g. Is red wine good for you?"></textarea>
+          </div>
+          <div class="compare-input-wrap">
+            <div class="compare-label" style="color:#aa66ff">🟣 Question B</div>
+            <textarea class="compare-textarea" id="compareB" placeholder="e.g. Is red wine bad for you?"></textarea>
+          </div>
+          <button class="compare-run-btn" id="compareBtn" onclick="runCompare()">COMPARE →</button>
+        </div>
+        <div class="compare-outputs" id="compareOutputs">
+          <div class="empty-state" style="flex:1">
+            <div class="empty-icon">⇄</div>
+            <div class="empty-title">Compare Mode</div>
+            <div class="empty-desc">Enter two questions or opposing views. See which argument has stronger epistemic foundations by comparing their confidence maps side by side.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── RESEARCH MODE ── -->
+    <div class="mode-panel" id="panel-research">
+      <div class="research-panel">
+        <div class="research-input-area">
+          <textarea class="research-textarea" id="researchInput" placeholder="Paste a claim, article excerpt, or topic for deep research analysis. e.g. 'Ivermectin cures COVID-19' or 'The economy is improving'…"></textarea>
+          <div class="research-row">
+            <button class="research-run-btn" id="researchBtn" onclick="runResearch()">🔬 DEEP ANALYZE →</button>
+            <span style="font-size:11px;color:var(--muted)">Breaks claims into verifiable sub-claims with individual confidence scores</span>
+          </div>
+        </div>
+        <div class="research-output" id="researchOutput">
+          <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <div class="empty-title">Research Mode</div>
+            <div class="empty-desc">Paste any claim or article. The engine will decompose it into individual sub-claims, rate each one, and flag which need verification from primary sources.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MEDICAL MODE ── -->
+    <div class="mode-panel" id="panel-medical">
+      <div class="single-output" id="medicalOutput">
+        <div class="empty-state">
+          <div class="empty-icon">💊</div>
+          <div class="empty-title">Medical Mode</div>
+          <div class="empty-desc">Ask medical questions. The engine applies extra-strict uncertainty rules — red-flags dangerous speculation and always directs to professional consultation where needed.</div>
+        </div>
+      </div>
+      <div class="input-dock">
+        <div class="suggestions-row">
+          <button class="sug-btn" onclick="fillMedical('What are the symptoms of appendicitis?')">🏥 Appendicitis symptoms</button>
+          <button class="sug-btn" onclick="fillMedical('Can taking ibuprofen daily harm your kidneys?')">💊 Ibuprofen & kidneys</button>
+          <button class="sug-btn" onclick="fillMedical('What causes type 2 diabetes?')">🩺 Type 2 diabetes</button>
+          <button class="sug-btn" onclick="fillMedical('Is intermittent fasting safe?')">🥗 Intermittent fasting</button>
+        </div>
+        <div class="input-row">
+          <textarea class="main-input" id="medicalInput" placeholder="Ask a medical question — extra-strict uncertainty scoring applied…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();runMedical();}"></textarea>
+          <button class="analyze-btn" id="medicalBtn" onclick="runMedical()" style="background:linear-gradient(135deg,#ff4d6d,#ff8866)">ANALYZE →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── DEBATE MODE ── -->
+    <div class="mode-panel" id="panel-debate">
+      <div class="single-output" id="debateOutput">
+        <div class="empty-state">
+          <div class="empty-icon">⚖</div>
+          <div class="empty-title">Debate Mode</div>
+          <div class="empty-desc">Enter a debatable topic. The engine presents the strongest arguments for both sides and rates the epistemic strength of each claim — useful for finding the weakest arguments.</div>
+        </div>
+      </div>
+      <div class="input-dock">
+        <div class="suggestions-row">
+          <button class="sug-btn" onclick="fillDebate('Should AI be regulated by governments?')">🤖 AI regulation</button>
+          <button class="sug-btn" onclick="fillDebate('Is nuclear energy good or bad?')">☢ Nuclear energy</button>
+          <button class="sug-btn" onclick="fillDebate('Should social media be banned for under 16s?')">📱 Social media age limits</button>
+          <button class="sug-btn" onclick="fillDebate('Is remote work better than office work?')">🏠 Remote vs office</button>
+        </div>
+        <div class="input-row">
+          <textarea class="main-input" id="debateInput" placeholder="Enter a debatable topic — get both sides with confidence-mapped arguments…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();runDebate();}"></textarea>
+          <button class="analyze-btn" id="debateBtn" onclick="runDebate()" style="background:linear-gradient(135deg,#ff9040,#ffcc00)">ANALYZE →</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end main -->
+</div><!-- end app-body -->
+
+<!-- EXPORT MODAL -->
+<div class="modal-overlay" id="exportModal" onclick="if(event.target===this)closeExportModal()">
+  <div class="modal">
+    <div class="modal-title">Export Sessions</div>
+    <div class="modal-sub">Choose a format to export all your sessions</div>
+    <div class="modal-options">
+      <div class="export-opt" onclick="exportJSON()">
+        <div class="export-opt-icon">📄</div>
+        <div class="export-opt-info">
+          <div class="export-opt-name">JSON Data</div>
+          <div class="export-opt-desc">Full structured data with confidence scores for each session</div>
+        </div>
+      </div>
+      <div class="export-opt" onclick="exportHTML()">
+        <div class="export-opt-icon">🌐</div>
+        <div class="export-opt-info">
+          <div class="export-opt-name">HTML Report</div>
+          <div class="export-opt-desc">Self-contained colorized report you can open in any browser</div>
+        </div>
+      </div>
+      <div class="export-opt" onclick="exportText()">
+        <div class="export-opt-icon">📝</div>
+        <div class="export-opt-info">
+          <div class="export-opt-name">Plain Text</div>
+          <div class="export-opt-desc">Clean text with confidence labels — paste into any document</div>
+        </div>
+      </div>
+    </div>
+    <button class="modal-close" onclick="closeExportModal()">Cancel</button>
+  </div>
+</div>
+
+<script>
+// ── STATE ──
+let sessions = [];
+let activeMode = 'single';
+let globalCounts = { m:0, i:0, e:0, u:0 };
+
+// ── SYSTEM PROMPTS ──
+const PROMPTS = {
+  general: `You are the Uncertainty Engine — an AI that maps epistemic confidence for every claim.
+Tag EVERY substantive claim with:
+[M]...[/M] = MEMORIZED — Direct from training data. High confidence.
+[I]...[/I] = INFERRED — Logically derived. Medium-high confidence.
+[E]...[/E] = EXTRAPOLATED — Pattern-matched guess. Medium confidence.
+[U]...[/U] = UNKNOWN — Genuinely uncertain, speculative. Low confidence.
+Rules: Tag everything. Be honest. Do not explain the system. 3-5 paragraphs.
+End with: STAKES:high, STAKES:medium, or STAKES:low`,
+
+  medical: `You are the Medical Uncertainty Engine.
+Apply EXTRA STRICT uncertainty rules for all medical content.
+Tag EVERY claim with:
+[M]...[/M] = MEMORIZED — Well-established medical consensus
+[I]...[/I] = INFERRED — Derived from known medical principles
+[E]...[/E] = EXTRAPOLATED — Some evidence but not definitive
+[U]...[/U] = UNKNOWN — Contested, individual variation, or requires professional evaluation
+Rules: Heavily favor [U] for anything individual-specific. Always add disclaimer if advice needed. Do NOT explain tagging. 3-4 paragraphs.
+End with: STAKES:high`,
+
+  research: `You are a Research Claim Analyzer.
+The user provides a claim or article. Decompose it into 5-8 individual sub-claims.
+For each sub-claim, format exactly as:
+CLAIM: [the sub-claim text]
+TYPE: [M/I/E/U]
+REASON: [one sentence why]
+VERDICT: [VERIFIED / LIKELY / UNCERTAIN / UNVERIFIED]
+---
+Then write a 2-paragraph SUMMARY section with confidence tags [M][/M][I][/I][E][/E][U][/U].
+End with: STAKES:high or STAKES:medium or STAKES:low`,
+
+  debate: `You are the Debate Uncertainty Engine.
+Present both sides of the topic with confidence-tagged arguments.
+Format:
+FOR: [one sentence framing]
+[3-4 arguments for, each tagged with [M][/M][I][/I][E][/E][U][/U]]
+
+AGAINST: [one sentence framing]
+[3-4 arguments against, each tagged]
+
+VERDICT: [1-2 sentences on which side has stronger epistemic foundations, also tagged]
+End with: STAKES:high or STAKES:medium or STAKES:low`,
+
+  compare: `You are the Uncertainty Engine in comparison mode.
+Analyze this question/claim and respond with confidence-tagged analysis.
+Tag EVERY claim with [M][/M][I][/I][E][/E][U][/U].
+Be concise — 2-3 paragraphs.
+End with: STAKES:high or STAKES:medium or STAKES:low`
+};
+
+// ── MODE SWITCH ──
+function switchMode(mode) {
+  activeMode = mode;
+  document.querySelectorAll('.mode-tab').forEach((t,i) => {
+    const modes = ['single','compare','research','medical','debate'];
+    t.classList.toggle('active', modes[i] === mode);
+  });
+  document.querySelectorAll('.mode-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + mode).classList.add('active');
+}
+
+// ── FILL HELPERS ──
+function fillSingle(q) { document.getElementById('singleInput').value = q; }
+function fillMedical(q) { document.getElementById('medicalInput').value = q; }
+function fillDebate(q) { document.getElementById('debateInput').value = q; }
+
+// ── API CALL ──
+async function callAPI(prompt, systemKey) {
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      system: PROMPTS[systemKey] || PROMPTS.general,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  if (!r.ok) throw new Error(`API error ${r.status}`);
+  const d = await r.json();
+  return d.content[0].text;
+}
+
+// ── PARSE RESPONSE ──
+function parseAndRender(rawText) {
+  let stakes = 'medium';
+  const sm = rawText.match(/STAKES:(high|medium|low)/i);
+  if (sm) stakes = sm[1].toLowerCase();
+  const clean = rawText.replace(/STAKES:(high|medium|low)/gi,'').trim();
+
+  const counts = {
+    m: (clean.match(/\[M\]/g)||[]).length,
+    i: (clean.match(/\[I\]/g)||[]).length,
+    e: (clean.match(/\[E\]/g)||[]).length,
+    u: (clean.match(/\[U\]/g)||[]).length
+  };
+  const total = counts.m+counts.i+counts.e+counts.u || 1;
+
+  let html = clean
+    .replace(/\[M\]([\s\S]*?)\[\/M\]/g, (_,t) => `<span class="cs cs-m tt-m">${t}<span class="tt"><div class="tt-type">✓ MEMORIZED</div><div class="tt-desc">Training data. High confidence.</div></span></span>`)
+    .replace(/\[I\]([\s\S]*?)\[\/I\]/g, (_,t) => `<span class="cs cs-i tt-i">${t}<span class="tt"><div class="tt-type">~ INFERRED</div><div class="tt-desc">Logically derived. Medium-high.</div></span></span>`)
+    .replace(/\[E\]([\s\S]*?)\[\/E\]/g, (_,t) => `<span class="cs cs-e tt-e">${t}<span class="tt"><div class="tt-type">≈ EXTRAPOLATED</div><div class="tt-desc">Pattern guess. Medium confidence.</div></span></span>`)
+    .replace(/\[U\]([\s\S]*?)\[\/U\]/g, (_,t) => `<span class="cs cs-u tt-u">${t}<span class="tt"><div class="tt-type">? UNKNOWN</div><div class="tt-desc">Genuine uncertainty. Low confidence.</div></span></span>`);
+
+  html = html.split('\n\n').filter(p=>p.trim()).map(p=>`<p>${p.replace(/\n/g,'<br>')}</p>`).join('');
+
+  return { html, counts, total, stakes, raw: clean };
+}
+
+// ── LOADING ──
+function showLoading(containerId) {
+  const id = 'load_' + Date.now();
+  const steps = ['Generating response','Auditing reasoning','Mapping knowledge boundaries','Scoring confidence'];
+  document.getElementById(containerId).insertAdjacentHTML('afterbegin', `
+    <div class="loading-card" id="${id}">
+      <div class="spinner"></div>
+      <div class="loading-label">Analyzing…</div>
+      <div class="loading-steps">
+        ${steps.map((s,i)=>`<div class="lstep ${i===0?'active':''}" id="${id}_s${i}"><div class="lstep-dot"></div>${s}</div>`).join('')}
+      </div>
+    </div>
+  `);
+  const timers = steps.slice(1).map((_, i) =>
+    setTimeout(() => {
+      const prev = document.getElementById(`${id}_s${i}`);
+      const curr = document.getElementById(`${id}_s${i+1}`);
+      if (prev) prev.className = 'lstep done';
+      if (curr) curr.className = 'lstep active';
+    }, 700 * (i+1))
+  );
+  return { id, timers };
+}
+
+function removeLoading(id, timers) {
+  timers.forEach(t => clearTimeout(t));
+  document.getElementById(id)?.remove();
+}
+
+// ── UPDATE SIDEBAR ──
+function updateSidebar(counts, total) {
+  globalCounts.m += counts.m;
+  globalCounts.i += counts.i;
+  globalCounts.e += counts.e;
+  globalCounts.u += counts.u;
+  const gt = globalCounts.m+globalCounts.i+globalCounts.e+globalCounts.u || 1;
+  document.getElementById('lg-m').textContent = Math.round(globalCounts.m/gt*100)+'%';
+  document.getElementById('lg-i').textContent = Math.round(globalCounts.i/gt*100)+'%';
+  document.getElementById('lg-e').textContent = Math.round(globalCounts.e/gt*100)+'%';
+  document.getElementById('lg-u').textContent = Math.round(globalCounts.u/gt*100)+'%';
+}
+
+function addSession(question, counts, total, mode) {
+  const t = globalCounts.m+globalCounts.i+globalCounts.e+globalCounts.u || 1;
+  const pm=Math.round(counts.m/total*100), pi=Math.round(counts.i/total*100),
+        pe=Math.round(counts.e/total*100), pu=Math.round(counts.u/total*100);
+  const session = { question, counts, total, mode, time: new Date() };
+  sessions.unshift(session);
+
+  const list = document.getElementById('sessionsList');
+  const empty = list.querySelector('.no-sessions');
+  if (empty) empty.remove();
+
+  const item = document.createElement('div');
+  item.className = 'session-item';
+  item.innerHTML = `
+    <div class="session-q">${escHtml(question)}</div>
+    <div class="session-meta">
+      <div class="session-time">${formatTime(session.time)} · ${mode}</div>
+      <div class="session-bar">
+        <div class="session-bar-seg" style="width:${pm}%;background:var(--mem)"></div>
+        <div class="session-bar-seg" style="width:${pi}%;background:var(--inf)"></div>
+        <div class="session-bar-seg" style="width:${pe}%;background:var(--ext)"></div>
+        <div class="session-bar-seg" style="width:${pu}%;background:var(--unk)"></div>
+      </div>
+    </div>
+  `;
+  list.insertAdjacentElement('afterbegin', item);
+}
+
+// ── CARD BUILDER ──
+function buildCard(question, parsed, mode, rawText) {
+  const { html, counts, total, stakes } = parsed;
+  const pm=Math.round(counts.m/total*100), pi=Math.round(counts.i/total*100),
+        pe=Math.round(counts.e/total*100), pu=Math.round(counts.u/total*100);
+  const badgeClass = `badge-${mode}`;
+  const stakesCls = `stakes-${stakes}`;
+  const stakesTxt = stakes === 'high' ? '⚠ High Stakes' : stakes === 'medium' ? '◈ Medium Stakes' : '✓ Low Stakes';
+  const cardId = 'card_' + Date.now();
+
+  return `
+    <div class="response-card" id="${cardId}">
+      <div class="card-header">
+        <span class="card-mode-badge ${badgeClass}">${mode}</span>
+        <div class="card-question">${escHtml(question)}</div>
+        <span class="stakes-pill ${stakesCls}">${stakesTxt}</span>
+        <div class="card-actions">
+          <button class="card-btn export" onclick="exportCard('${cardId}')">↑ Export</button>
+        </div>
+      </div>
+      <div class="card-body">${html}</div>
+      <div class="card-footer">
+        <div class="conf-bar-wrap">
+          <div class="conf-bar-lbl">Confidence Breakdown</div>
+          <div class="conf-bar">
+            <div class="cbs" style="width:${pm}%;background:var(--mem)"></div>
+            <div class="cbs" style="width:${pi}%;background:var(--inf)"></div>
+            <div class="cbs" style="width:${pe}%;background:var(--ext)"></div>
+            <div class="cbs" style="width:${pu}%;background:var(--unk)"></div>
+          </div>
+        </div>
+        <div class="conf-stats">
+          <div class="cstat"><div class="cstat-v" style="color:var(--mem)">${pm}%</div><div class="cstat-l">Known</div></div>
+          <div class="cstat"><div class="cstat-v" style="color:var(--inf)">${pi}%</div><div class="cstat-l">Inferred</div></div>
+          <div class="cstat"><div class="cstat-v" style="color:var(--ext)">${pe}%</div><div class="cstat-l">Guessed</div></div>
+          <div class="cstat"><div class="cstat-v" style="color:var(--unk)">${pu}%</div><div class="cstat-l">Uncertain</div></div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ── SINGLE MODE ──
+async function runSingle() {
+  const q = document.getElementById('singleInput').value.trim();
+  if (!q) return;
+  const btn = document.getElementById('singleBtn');
+  btn.disabled = true;
+  const output = document.getElementById('singleOutput');
+  removeEmptyState(output);
+
+  const { id, timers } = showLoading('singleOutput');
+  try {
+    const raw = await callAPI(q, 'general');
+    removeLoading(id, timers);
+    const parsed = parseAndRender(raw);
+    output.insertAdjacentHTML('afterbegin', buildCard(q, parsed, 'general', raw));
+    updateSidebar(parsed.counts, parsed.total);
+    addSession(q, parsed.counts, parsed.total, 'analyze');
+    sessions[0].rawText = raw;
+  } catch(e) {
+    removeLoading(id, timers);
+    output.insertAdjacentHTML('afterbegin', `<div style="padding:16px;color:var(--unk);background:var(--unk-bg);border:1px solid var(--unk-b);border-radius:10px;font-size:12px">⚠ ${e.message}</div>`);
+  }
+  btn.disabled = false;
+  document.getElementById('singleInput').value = '';
+}
+
+// ── MEDICAL MODE ──
+async function runMedical() {
+  const q = document.getElementById('medicalInput').value.trim();
+  if (!q) return;
+  const btn = document.getElementById('medicalBtn');
+  btn.disabled = true;
+  const output = document.getElementById('medicalOutput');
+  removeEmptyState(output);
+
+  const { id, timers } = showLoading('medicalOutput');
+  try {
+    const raw = await callAPI(q, 'medical');
+    removeLoading(id, timers);
+    const parsed = parseAndRender(raw);
+    output.insertAdjacentHTML('afterbegin', buildCard(q, parsed, 'medical', raw));
+    updateSidebar(parsed.counts, parsed.total);
+    addSession(q, parsed.counts, parsed.total, 'medical');
+  } catch(e) {
+    removeLoading(id, timers);
+    output.insertAdjacentHTML('afterbegin', `<div style="padding:16px;color:var(--unk);background:var(--unk-bg);border:1px solid var(--unk-b);border-radius:10px;font-size:12px">⚠ ${e.message}</div>`);
+  }
+  btn.disabled = false;
+  document.getElementById('medicalInput').value = '';
+}
+
+// ── DEBATE MODE ──
+async function runDebate() {
+  const q = document.getElementById('debateInput').value.trim();
+  if (!q) return;
+  const btn = document.getElementById('debateBtn');
+  btn.disabled = true;
+  const output = document.getElementById('debateOutput');
+  removeEmptyState(output);
+
+  const { id, timers } = showLoading('debateOutput');
+  try {
+    const raw = await callAPI(q, 'debate');
+    removeLoading(id, timers);
+    const parsed = parseAndRender(raw);
+    output.insertAdjacentHTML('afterbegin', buildCard(q, parsed, 'debate', raw));
+    updateSidebar(parsed.counts, parsed.total);
+    addSession(q, parsed.counts, parsed.total, 'debate');
+  } catch(e) {
+    removeLoading(id, timers);
+    output.insertAdjacentHTML('afterbegin', `<div style="padding:16px;color:var(--unk);background:var(--unk-bg);border:1px solid var(--unk-b);border-radius:10px;font-size:12px">⚠ ${e.message}</div>`);
+  }
+  btn.disabled = false;
+  document.getElementById('debateInput').value = '';
+}
+
+// ── RESEARCH MODE ──
+async function runResearch() {
+  const q = document.getElementById('researchInput').value.trim();
+  if (!q) return;
+  const btn = document.getElementById('researchBtn');
+  btn.disabled = true;
+  const output = document.getElementById('researchOutput');
+  removeEmptyState(output);
+
+  const { id, timers } = showLoading('researchOutput');
+  try {
+    const raw = await callAPI(q, 'research');
+    removeLoading(id, timers);
+
+    // Parse research format
+    const claims = [];
+    const claimRegex = /CLAIM:\s*(.*?)\nTYPE:\s*([MIEU])\nREASON:\s*(.*?)\nVERDICT:\s*(.*?)(?:\n---|$)/gs;
+    let m;
+    while ((m = claimRegex.exec(raw)) !== null) {
+      claims.push({ claim: m[1].trim(), type: m[2], reason: m[3].trim(), verdict: m[4].trim() });
+    }
+
+    // Summary section
+    const summaryMatch = raw.match(/SUMMARY\n?([\s\S]*?)(?:STAKES:|$)/i);
+    const summaryRaw = summaryMatch ? summaryMatch[1].trim() : '';
+
+    let stakes = 'medium';
+    const sm2 = raw.match(/STAKES:(high|medium|low)/i);
+    if (sm2) stakes = sm2[1].toLowerCase();
+
+    const typeColors = { M:'var(--mem)', I:'var(--inf)', E:'var(--ext)', U:'var(--unk)' };
+    const typeLabels = { M:'MEMORIZED', I:'INFERRED', E:'EXTRAPOLATED', U:'UNKNOWN' };
+    const verdictColors = { VERIFIED:'var(--mem)', LIKELY:'var(--inf)', UNCERTAIN:'var(--ext)', UNVERIFIED:'var(--unk)' };
+
+    let claimsHtml = claims.map(c => `
+      <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+        <div style="flex-shrink:0;padding-top:2px">
+          <div style="width:9px;height:9px;border-radius:50%;background:${typeColors[c.type]};box-shadow:0 0 6px ${typeColors[c.type]}"></div>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:12px;color:var(--white);margin-bottom:4px">${escHtml(c.claim)}</div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px">${escHtml(c.reason)}</div>
+          <div style="display:flex;gap:8px">
+            <span style="font-size:9px;font-family:'Syne',sans-serif;font-weight:700;color:${typeColors[c.type]};letter-spacing:1px">${typeLabels[c.type]}</span>
+            <span style="font-size:9px;font-family:'Syne',sans-serif;font-weight:700;color:${verdictColors[c.verdict]||'var(--muted)'};letter-spacing:1px">● ${c.verdict}</span>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    if (!claimsHtml) claimsHtml = `<div style="font-size:12px;line-height:1.8;color:var(--text)">${escHtml(raw.substring(0,600))}</div>`;
+
+    const summaryParsed = summaryRaw ? parseAndRender(summaryRaw + '\nSTAKES:' + stakes) : null;
+    const stakesCls = `stakes-${stakes}`;
+    const stakesTxt = stakes==='high'?'⚠ High Stakes':stakes==='medium'?'◈ Medium Stakes':'✓ Low Stakes';
+
+    const counts = { m:0,i:0,e:0,u:0 };
+    claims.forEach(c => { if(c.type==='M')counts.m++; else if(c.type==='I')counts.i++; else if(c.type==='E')counts.e++; else counts.u++; });
+    const total = claims.length || 1;
+
+    output.insertAdjacentHTML('afterbegin', `
+      <div class="research-card">
+        <div class="research-card-header">
+          <span style="color:var(--accent)">🔬</span>
+          CLAIM ANALYSIS — <span class="stakes-pill ${stakesCls}" style="margin-left:4px">${stakesTxt}</span>
+        </div>
+        <div class="research-card-body">${claimsHtml}</div>
+      </div>
+      ${summaryParsed ? `
+      <div class="research-card">
+        <div class="research-card-header"><span>📋</span> SUMMARY</div>
+        <div class="research-card-body">${summaryParsed.html}</div>
+      </div>` : ''}
+    `);
+
+    updateSidebar(counts, total);
+    addSession(q.substring(0,60), counts, total, 'research');
+  } catch(e) {
+    removeLoading(id, timers);
+    output.insertAdjacentHTML('afterbegin', `<div style="padding:16px;color:var(--unk);background:var(--unk-bg);border:1px solid var(--unk-b);border-radius:10px;font-size:12px">⚠ ${e.message}</div>`);
+  }
+  btn.disabled = false;
+}
+
+// ── COMPARE MODE ──
+async function runCompare() {
+  const qa = document.getElementById('compareA').value.trim();
+  const qb = document.getElementById('compareB').value.trim();
+  if (!qa || !qb) return alert('Enter both questions');
+  const btn = document.getElementById('compareBtn');
+  btn.disabled = true;
+
+  const outDiv = document.getElementById('compareOutputs');
+  outDiv.innerHTML = `
+    <div class="compare-col" id="colA">
+      <div class="compare-col-header"><div class="col-a-dot"></div>QUESTION A</div>
+      <div id="colAContent"></div>
+    </div>
+    <div class="compare-col" id="colB">
+      <div class="compare-col-header"><div class="col-b-dot"></div>QUESTION B</div>
+      <div id="colBContent"></div>
+    </div>
+  `;
+
+  // Load both
+  const lA = showLoadingInline('colAContent');
+  const lB = showLoadingInline('colBContent');
+
+  try {
+    const [rawA, rawB] = await Promise.all([callAPI(qa, 'compare'), callAPI(qb, 'compare')]);
+    removeLoadingInline(lA);
+    removeLoadingInline(lB);
+
+    const pA = parseAndRender(rawA);
+    const pB = parseAndRender(rawB);
+
+    document.getElementById('colAContent').innerHTML = buildCompareCard(qa, pA, 'var(--accent)');
+    document.getElementById('colBContent').innerHTML = buildCompareCard(qb, pB, '#aa66ff');
+
+    // Winner analysis
+    const confA = Math.round((pA.counts.m + pA.counts.i*0.7) / pA.total * 100);
+    const confB = Math.round((pB.counts.m + pB.counts.i*0.7) / pB.total * 100);
+    const winner = confA >= confB ? 'A' : 'B';
+    const winnerColor = winner === 'A' ? 'var(--accent)' : '#aa66ff';
+
+    document.getElementById('colA').insertAdjacentHTML('beforeend', `
+      <div class="compare-winner">
+        <div class="compare-winner-title">EPISTEMIC STRENGTH SCORE</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:28px;color:${winner==='A'?'var(--accent)':'var(--muted)'}">
+          ${confA}%
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">Combined verified+inferred confidence</div>
+      </div>
+    `);
+    document.getElementById('colB').insertAdjacentHTML('beforeend', `
+      <div class="compare-winner">
+        <div class="compare-winner-title">EPISTEMIC STRENGTH SCORE</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:28px;color:${winner==='B'?'#aa66ff':'var(--muted)'}">
+          ${confB}%
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">Combined verified+inferred confidence</div>
+      </div>
+    `);
+
+    updateSidebar(pA.counts, pA.total);
+    addSession(`Compare: ${qa.substring(0,30)} vs ${qb.substring(0,30)}`, pA.counts, pA.total, 'compare');
+
+  } catch(e) {
+    removeLoadingInline(lA); removeLoadingInline(lB);
+    outDiv.innerHTML = `<div style="padding:16px;color:var(--unk)">⚠ ${e.message}</div>`;
+  }
+  btn.disabled = false;
+}
+
+function buildCompareCard(question, parsed, accentColor) {
+  const { html, counts, total, stakes } = parsed;
+  const pm=Math.round(counts.m/total*100), pi=Math.round(counts.i/total*100),
+        pe=Math.round(counts.e/total*100), pu=Math.round(counts.u/total*100);
+  return `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:12px">
+      <div style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;color:${accentColor}">${escHtml(question)}</div>
+      <div style="padding:14px 16px;font-size:12px;line-height:1.85;color:var(--text)">${html}</div>
+      <div style="padding:10px 14px;border-top:1px solid var(--border);display:flex;gap:12px;align-items:center">
+        <div style="flex:1;height:4px;border-radius:2px;background:var(--border);overflow:hidden;display:flex">
+          <div style="width:${pm}%;height:100%;background:var(--mem)"></div>
+          <div style="width:${pi}%;height:100%;background:var(--inf)"></div>
+          <div style="width:${pe}%;height:100%;background:var(--ext)"></div>
+          <div style="width:${pu}%;height:100%;background:var(--unk)"></div>
+        </div>
+        <div style="display:flex;gap:10px;font-size:10px;font-family:'Syne',sans-serif;font-weight:700">
+          <span style="color:var(--mem)">${pm}%</span>
+          <span style="color:var(--inf)">${pi}%</span>
+          <span style="color:var(--ext)">${pe}%</span>
+          <span style="color:var(--unk)">${pu}%</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function showLoadingInline(containerId) {
+  const id = 'li_' + Date.now() + Math.random();
+  document.getElementById(containerId).innerHTML = `
+    <div id="${id}" style="display:flex;align-items:center;gap:10px;padding:20px;color:var(--muted);font-size:11px">
+      <div class="spinner" style="width:20px;height:20px"></div>Analyzing…
+    </div>`;
+  return id;
+}
+function removeLoadingInline(id) { document.getElementById(id)?.remove(); }
+
+// ── EXPORT ──
+function exportCard(cardId) {
+  const card = document.getElementById(cardId);
+  if (!card) return;
+  const text = card.innerText;
+  const blob = new Blob([text], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'uncertainty-analysis.txt';
+  a.click();
+}
+
+function openExportModal() { document.getElementById('exportModal').classList.add('open'); }
+function closeExportModal() { document.getElementById('exportModal').classList.remove('open'); }
+
+function exportJSON() {
+  const data = sessions.map(s => ({
+    question: s.question, mode: s.mode, time: s.time,
+    confidence: { memorized: s.counts.m, inferred: s.counts.i, extrapolated: s.counts.e, unknown: s.counts.u },
+    total_claims: s.total
+  }));
+  download(JSON.stringify(data, null, 2), 'uncertainty-sessions.json', 'application/json');
+  closeExportModal();
+}
+
+function exportText() {
+  const lines = sessions.map(s =>
+    `[${s.mode.toUpperCase()}] ${s.question}\n` +
+    `  Memorized: ${Math.round(s.counts.m/s.total*100)}% | Inferred: ${Math.round(s.counts.i/s.total*100)}% | ` +
+    `Extrapolated: ${Math.round(s.counts.e/s.total*100)}% | Unknown: ${Math.round(s.counts.u/s.total*100)}%\n`
+  ).join('\n');
+  download('UNCERTAINTY ENGINE — SESSION EXPORT\n\n' + lines, 'uncertainty-sessions.txt', 'text/plain');
+  closeExportModal();
+}
+
+function exportHTML() {
+  const allCards = document.querySelectorAll('.response-card, .research-card');
+  let cardsHtml = Array.from(allCards).map(c => c.outerHTML).join('\n');
+  const full = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Uncertainty Report</title>
+  <style>body{background:#06080b;color:#b8ccd8;font-family:monospace;padding:32px;max-width:800px;margin:0 auto}
+  .response-card,.research-card{background:#0f1520;border:1px solid #1e2d3d;border-radius:12px;margin-bottom:20px;overflow:hidden}
+  .card-header,.research-card-header{padding:12px 20px;border-bottom:1px solid #1e2d3d;font-size:12px}
+  .card-body,.research-card-body{padding:20px;font-size:13px;line-height:1.85}
+  .cs-m{background:rgba(0,232,122,.08);border-bottom:2px solid #00e87a;color:#d0fff0;padding:1px 2px;border-radius:3px}
+  .cs-i{background:rgba(255,229,102,.08);border-bottom:2px solid #ffe566;color:#fffce0;padding:1px 2px;border-radius:3px}
+  .cs-e{background:rgba(255,144,64,.08);border-bottom:2px solid #ff9040;color:#fff4e8;padding:1px 2px;border-radius:3px}
+  .cs-u{background:rgba(255,77,109,.08);border-bottom:2px solid #ff4d6d;color:#ffe8ed;padding:1px 2px;border-radius:3px}
+  .tt{display:none}.card-actions{display:none}</style></head><body>
+  <h1 style="color:#0af0c0;font-family:sans-serif;margin-bottom:24px">🧠 Uncertainty Engine — Export</h1>
+  ${cardsHtml}</body></html>`;
+  download(full, 'uncertainty-report.html', 'text/html');
+  closeExportModal();
+}
+
+function download(content, filename, type) {
+  const blob = new Blob([content], { type });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+}
+
+// ── CLEAR ──
+function clearAll() {
+  if (!confirm('Clear all sessions and responses?')) return;
+  sessions = [];
+  globalCounts = { m:0,i:0,e:0,u:0 };
+  ['singleOutput','medicalOutput','debateOutput','researchOutput'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = '';
+  });
+  document.getElementById('compareOutputs').innerHTML = '';
+  document.getElementById('sessionsList').innerHTML = '<div class="no-sessions">No sessions yet.<br>Ask a question to begin.</div>';
+  ['lg-m','lg-i','lg-e','lg-u'].forEach(id => { document.getElementById(id).textContent = '—'; });
+}
+
+// ── HELPERS ──
+function removeEmptyState(container) {
+  const e = container.querySelector('.empty-state');
+  if (e) e.remove();
+}
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function formatTime(d) {
+  return d.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+}
+</script>
+</body>
+</html>
