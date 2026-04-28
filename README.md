@@ -1,113 +1,59 @@
-# 🧠 Uncertainty Engine
+# 🧠 Uncertainty Engine Pro
 
-Uncertainty Engine Pro is a web-based AI analysis tool that evaluates responses based on confidence levels. Instead of giving a single answer, it breaks down *how certain each claim is* using color-coded tagging.
+**Analyze AI responses with confidence levels. Make informed decisions by understanding how certain each claim truly is.**
 
----
+![Status](https://img.shields.io/badge/Status-Active-brightgreen)
+![License](https://img.shields.io/badge/License-Open-blue)
 
-## 🚀 Features
+## 🎯 What is Uncertainty Engine?
 
-### ⚡ Analyze Mode
+Uncertainty Engine Pro is a web-based analysis tool that evaluates AI responses by breaking down **how confident each claim is**. Instead of blindly trusting AI responses, this tool helps you understand:
 
-* Ask any question
-* AI response is tagged with:
+- **Memorized**: High confidence (facts, well-known information)
+- **Inferred**: Logical reasoning (deductions, predictions)
+- **Extrapolated**: Educated guess (probability-based)
+- **Unknown**: Uncertain (lack of data or clear reasoning)
 
-  * **Memorized** (high confidence)
-  * **Inferred** (logical reasoning)
-  * **Extrapolated** (educated guess)
-  * **Unknown** (uncertain)
+## ✨ Features
 
-### ⇄ Compare Mode
+### 📊 **Analyze Mode**
+Ask any question and get AI response tagged with confidence levels and reasoning.
 
-* Compare two questions or viewpoints
-* Side-by-side confidence analysis
-* Shows which answer is more reliable
+### ⇄ **Compare Mode**
+Compare two questions or viewpoints side-by-side to see which answer is more reliable.
 
-### 🔬 Research Mode
+### 🔬 **Research Mode**
+Break down complex claims into smaller sub-claims, each with confidence analysis and verification status.
 
-* Breaks down claims into smaller sub-claims
-* Each claim gets:
+### 💊 **Medical Mode**
+Apply stricter uncertainty rules with warnings for risky or unclear medical advice.
 
-  * Confidence type
-  * Reasoning
-  * Verification status
+### ⚖️ **Debate Mode**
+Evaluate both sides of an argument and see which claims have stronger evidence.
 
-### 💊 Medical Mode
-
-* Applies stricter uncertainty rules
-* Flags risky or unclear medical advice
-* Encourages professional consultation
-
-### ⚖ Debate Mode
-
-* Shows both sides of an argument
-* Evaluates strength of each claim
-
----
-
-## 🎨 UI Highlights
-
-* Dark modern interface
-* Real-time confidence visualization
-* Interactive tooltips explaining each tag
-* Session history tracking
-* Export options (JSON, HTML, Text)
-
----
+### 📤 **Export Options**
+- JSON (structured data)
+- HTML reports (visual format)
+- Plain text (simple format)
 
 ## 🛠️ Tech Stack
 
-* HTML5
-* CSS3 (custom UI styling)
-* Vanilla JavaScript
-* Anthropic Claude API
+| Technology | Purpose |
+|-----------|---------|
+| HTML5 | Structure |
+| CSS3 | Styling & Dark UI |
+| JavaScript | Interactivity |
+| Anthropic Claude API | AI Analysis |
 
----
+## 🚀 Quick Start
 
-## ⚙️ Setup
+### Prerequisites
+- Modern web browser
+- Anthropic Claude API key
 
-1. Clone or download the project
-2. Open `index.html` in your browser
+### Installation
 
-> ⚠️ Note: You must connect your own API key for the Claude API to make it functional.
-
----
-
-## 📦 API Configuration
-
-Replace the API request in the JavaScript section with your own key:
-
-```js
-headers: {
-  "Content-Type": "application/json",
-  "x-api-key": "YOUR_API_KEY_HERE"
-}
-```
-
----
-
-## 📤 Export Options
-
-* JSON (structured data)
-* HTML report (visual)
-* Plain text (simple format)
-
----
-
-## 💡 Use Cases
-
-* Fact-checking AI responses
-* Research validation
-* Learning tool for critical thinking
-* Comparing arguments or claims
-
----
-
-## ⚠️ Disclaimer
-
-This tool provides AI-generated analysis and should not be used as a sole source of truth, especially for medical or critical decisions.
-
----
-
-## 📄 License
-
-Open for personal and educational use.
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/nizam001-ui/uncertainty-engine.git
+   cd uncertainty-engine
